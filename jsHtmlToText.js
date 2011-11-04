@@ -14,44 +14,82 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 HTML decoding functionality provided by: http://code.google.com/p/google-trekker/
+
+******* ADDED BY VORUSHIN *******
+* Based on https://github.com/mtrimpe/jsHtmlToText
+* I commented out special processing of <a> tags
+******* END *********************
+
 */
 function htmlToText(html) {
-	return html
-		// Remove line breaks
-		.replace(/(?:\n|\r\n|\r)/ig,"")
-		// Turn <br>'s into single line breaks. 
-		.replace(/<\s*br[^>]*>/ig,"\n") 
-		// Turn </li>'s into line breaks.
- 		.replace(/<\s*\/li[^>]*>/ig,"\n") 
-		// Turn <p>'s into double line breaks.
- 		.replace(/<\s*p[^>]*>/ig,"\n\n") 
-		// Remove content in script tags.
- 		.replace(/<\s*script[^>]*>[\s\S]*?<\/script>/mig,"")
-		// Remove content in style tags.
- 		.replace(/<\s*style[^>]*>[\s\S]*?<\/style>/mig,"")
-		// Remove content in comments.
- 		.replace(/<!--.*?-->/mig,"")
- 		// Format anchor tags properly. 
+    /* I scanned http://en.wikipedia.org/wiki/HTML_element for all html tags.
+    I put those tags that should affect plain text formatting in two categories:
+    those that should be replaced with two newlines and those that should be
+    replaced with one newline
+    */
+
+    var doubleNewlineTags = ['p', 'h[1-6]', 'dl', 'dt', 'dd', 'ol', 'ul',
+        'dir', 'address', 'blockquote', 'center', 'div', 'hr', 'pre', 'form',
+        'textarea', 'table'];
+
+    var singleNewlineTags = ['li', 'del', 'ins', 'fieldset', 'legend',
+        'tr', 'th', 'caption', 'thead', 'tbody', 'tfoot'];
+
+    var text = html
+        // Remove line breaks
+        .replace(/(?:\n|\r\n|\r)/ig, " ")
+        // Remove content in script tags.
+        .replace(/<\s*script[^>]*>[\s\S]*?<\/script>/mig, "")
+        // Remove content in style tags.
+        .replace(/<\s*style[^>]*>[\s\S]*?<\/style>/mig, "")
+        // Remove content in comments.
+        .replace(/<!--.*?-->/mig, "")
+        // Remove !DOCTYPE
+        .replace(/<!DOCTYPE.*?>/ig, "");
+
+    for (var i in doubleNewlineTags) {
+        var r = RegExp('<\\s*' + doubleNewlineTags[i] + '[^>]*>', 'ig');
+        text = text.replace(r, '\n\n');
+    }
+
+    for (var i in singleNewlineTags) {
+        var r = RegExp('<\\s*' + singleNewlineTags[i] + '[^>]*>', 'ig');
+        text = text.replace(r, '\n');
+    }
+
+    // Replace <br> and <br/> with a single newline
+    text = text.replace(/<\s*br[^>]*\\*\s*>/ig, '\n');
+
+	return text
+        // Remove all remaining tags.
+        .replace(/(<([^>]+)>)/ig,"")
+        // Trim rightmost whitespaces for all lines
+        .replace(/([^\n\S]+)\n/g,"\n")
+        .replace(/([^\n\S]+)$/,"")
+        // Make sure there are never more than two
+        // consecutive linebreaks.
+        .replace(/\n{2,}/g,"\n\n")
+        // Remove newlines at the beginning of the text.
+        .replace(/^\n+/,"")
+        // Remove newlines at the end of the text.
+        .replace(/\n+$/,"")
+        // Decode HTML entities.
+        .replace(/&([^;]+);/g, decodeHtmlEntity);
+
+ 		// Format anchor tags properly.
  		// e.g.
  		// input - <a class='ahref' href='http://pinetechlabs.com/' title='asdfqwer\"><b>asdf</b></a>
  		// output - asdf (http://pinetechlabs.com/)
- 		.replace(/<\s*a[^>]*href=['"](.*?)['"][^>]*>([\s\S]*?)<\/\s*a\s*>/ig, "$2 ($1)")
-		// Remove all remaining tags. 
- 		.replace(/(<([^>]+)>)/ig,"") 
-		// Make sure there are never more than two 
-		// consecutive linebreaks.
- 		.replace(/\n{2,}/g,"\n\n")
-		// Remove tabs. 	
- 		.replace(/\t/g,"")
-		// Remove newlines at the beginning of the text. 
- 		.replace(/^\n+/m,"") 	
+ 		//.replace(/<\s*a[^>]*href=['"](.*?)['"][^>]*>([\s\S]*?)<\/\s*a\s*>/ig, "$2 ($1)")
+
+		// Remove tabs.
+ 		//.replace(/\t/g,"")
+
 		// Replace multiple spaces with a single space.
- 		.replace(/ {2,}/g," ")
-		// Decode HTML entities.
- 		.replace(/&([^;]+);/g, decodeHtmlEntity );
+ 		//.replace(/ {2,}/g," ")
 }
 
-function decodeHtmlEntity = function(m, n) {
+function decodeHtmlEntity(m, n) {
 	// Determine the character code of the entity. Range is 0 to 65535
 	// (characters in JavaScript are Unicode, and entities can represent
 	// Unicode characters).
