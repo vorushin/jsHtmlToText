@@ -15,6 +15,8 @@ limitations under the License.
 
 HTML decoding functionality provided by: http://code.google.com/p/google-trekker/
 */
+
+
 function htmlToText(html, extensions) {
     var text = html;
 
