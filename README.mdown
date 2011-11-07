@@ -1,0 +1,23 @@
+jsHtmlToText is a basic regex-based HTML stripper.
+
+### How it works
+
+1. It removes all linebreaks, script-tags, styles, comments and DOCTYPE.
+2. Replaces most of block tags with double newlines.
+3. Replaces some of the block tags with a single newline.
+4. Replaces <br> with a single newline.
+5. Removes all html-tags left after steps 1-4
+6. Makes sure there are no more that two linebreaks in a row, removes linebreaks at the start and at the end of string, trims rightmost whitespaces and decodes html entities such as &nbsp;
+
+### Extensions
+
+You are able to change process of formatting by providing hooks in pre-processing, tag-replacing and post-processing. See tests/extensions.coffee for examples of hooks.
+
+### History
+
+It was created for a custom WebTV widget framework, which did not support other existing implementations.
+
+Use it when:
+* you need a minimal implementation
+* don't have access to a proper JavaScript implementation (it was originally written for Konqueror)
+* there no strong security requirements
