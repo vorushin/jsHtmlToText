@@ -10,3 +10,10 @@ describe "Converter", ->
 
     it "shouldn't add spaces at the start of the file", ->
         expect(htmlToText '\n\n\n<p>test</p>').toEqual 'test'
+
+    it "should add newlines after doubleNewlineTags", ->
+        expect(htmlToText '<ul><li>First</li><li>Second</li></ul><a>Link</a>')
+            .toEqual('First\nSecond\n\nLink')
+
+    it "should correctly process (xtml-like) <br/>", ->
+        expect(htmlToText 'First<br/>Second').toEqual('First\nSecond')

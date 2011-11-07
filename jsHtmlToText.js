@@ -14,28 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 HTML decoding functionality provided by: http://code.google.com/p/google-trekker/
-
-******* ADDED BY VORUSHIN *******
-* Based on https://github.com/mtrimpe/jsHtmlToText
-* I commented out special processing of <a> tags
-******* END *********************
-
 */
-function htmlToText(html) {
-    /* I scanned http://en.wikipedia.org/wiki/HTML_element for all html tags.
-    I put those tags that should affect plain text formatting in two categories:
-    those that should be replaced with two newlines and those that should be
-    replaced with one newline
-    */
+function htmlToText(html, extensions) {
+    var text = html;
 
-    var doubleNewlineTags = ['p', 'h[1-6]', 'dl', 'dt', 'dd', 'ol', 'ul',
-        'dir', 'address', 'blockquote', 'center', 'div', 'hr', 'pre', 'form',
-        'textarea', 'table'];
+    if (extensions && extensions['preprocessing'])
+        text = extensions['preprocessing'](text);
 
-    var singleNewlineTags = ['li', 'del', 'ins', 'fieldset', 'legend',
-        'tr', 'th', 'caption', 'thead', 'tbody', 'tfoot'];
-
-    var text = html
+    text = text
         // Remove line breaks
         .replace(/(?:\n|\r\n|\r)/ig, " ")
         // Remove content in script tags.
@@ -47,20 +33,35 @@ function htmlToText(html) {
         // Remove !DOCTYPE
         .replace(/<!DOCTYPE.*?>/ig, "");
 
-    for (var i in doubleNewlineTags) {
-        var r = RegExp('<\\s*' + doubleNewlineTags[i] + '[^>]*>', 'ig');
+    /* I scanned http://en.wikipedia.org/wiki/HTML_element for all html tags.
+    I put those tags that should affect plain text formatting in two categories:
+    those that should be replaced with two newlines and those that should be
+    replaced with one newline. */
+
+    if (extensions && extensions['tagreplacement'])
+        text = extensions['tagreplacement'](text);
+
+    var doubleNewlineTags = ['p', 'h[1-6]', 'dl', 'dt', 'dd', 'ol', 'ul',
+        'dir', 'address', 'blockquote', 'center', 'div', 'hr', 'pre', 'form',
+        'textarea', 'table'];
+
+    var singleNewlineTags = ['li', 'del', 'ins', 'fieldset', 'legend',
+        'tr', 'th', 'caption', 'thead', 'tbody', 'tfoot'];
+
+    for (i = 0; i < doubleNewlineTags.length; i++) {
+        var r = RegExp('</?\\s*' + doubleNewlineTags[i] + '[^>]*>', 'ig');
         text = text.replace(r, '\n\n');
     }
 
-    for (var i in singleNewlineTags) {
+    for (i = 0; i < singleNewlineTags.length; i++) {
         var r = RegExp('<\\s*' + singleNewlineTags[i] + '[^>]*>', 'ig');
         text = text.replace(r, '\n');
     }
 
     // Replace <br> and <br/> with a single newline
-    text = text.replace(/<\s*br[^>]*\\*\s*>/ig, '\n');
+    text = text.replace(/<\s*br[^>]*\/?\s*>/ig, '\n');
 
-	return text
+	text = text
         // Remove all remaining tags.
         .replace(/(<([^>]+)>)/ig,"")
         // Trim rightmost whitespaces for all lines
@@ -76,17 +77,10 @@ function htmlToText(html) {
         // Decode HTML entities.
         .replace(/&([^;]+);/g, decodeHtmlEntity);
 
- 		// Format anchor tags properly.
- 		// e.g.
- 		// input - <a class='ahref' href='http://pinetechlabs.com/' title='asdfqwer\"><b>asdf</b></a>
- 		// output - asdf (http://pinetechlabs.com/)
- 		//.replace(/<\s*a[^>]*href=['"](.*?)['"][^>]*>([\s\S]*?)<\/\s*a\s*>/ig, "$2 ($1)")
+    if (extensions && extensions['postprocessing'])
+        text = extensions['postprocessing'](text);
 
-		// Remove tabs.
- 		//.replace(/\t/g,"")
-
-		// Replace multiple spaces with a single space.
- 		//.replace(/ {2,}/g," ")
+    return text;
 }
 
 function decodeHtmlEntity(m, n) {

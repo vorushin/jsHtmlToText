@@ -257,6 +257,6 @@ describe "Converter", ->
         expect(text2).toEqual text
         if text2 != text
             console.log(text2)
-            for i in [0..Math.min(text.length, text2.length) - 1]
+            ###for i in [0..Math.min(text.length, text2.length) - 1]
                 if text[i] != text2[i]
-                    console.log '#' + i + ', ' + text.charCodeAt(i) + '!=' + text2.charCodeAt(i)
+                    console.log '#' + i + ', ' + text.charCodeAt(i) + '!=' + text2.charCodeAt(i)###
