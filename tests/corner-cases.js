@@ -15,8 +15,11 @@
     it("should add newlines after doubleNewlineTags", function() {
       return expect(htmlToText('<ul><li>First</li><li>Second</li></ul><a>Link</a>')).toEqual('First\nSecond\n\nLink');
     });
-    return it("should correctly process (xtml-like) <br/>", function() {
+    it("should correctly process (xtml-like) <br/>", function() {
       return expect(htmlToText('First<br/>Second')).toEqual('First\nSecond');
+    });
+    return it("<del> and <ins> tags should be inline", function() {
+      return expect(htmlToText('<del>del</del><ins>ins</ins>')).toEqual('delins');
     });
   });
 }).call(this);

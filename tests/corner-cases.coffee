@@ -17,3 +17,6 @@ describe "Converter", ->
 
     it "should correctly process (xtml-like) <br/>", ->
         expect(htmlToText 'First<br/>Second').toEqual('First\nSecond')
+
+    it "<del> and <ins> tags should be inline", ->
+        expect(htmlToText '<del>del</del><ins>ins</ins>').toEqual('delins')

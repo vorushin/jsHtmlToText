@@ -38,7 +38,14 @@ function htmlToText(html, extensions) {
     /* I scanned http://en.wikipedia.org/wiki/HTML_element for all html tags.
     I put those tags that should affect plain text formatting in two categories:
     those that should be replaced with two newlines and those that should be
-    replaced with one newline. */
+    replaced with one newline.
+
+    I process <DEL> and <INS> as inline elements.
+    http://www.w3.org/TR/1999/REC-html401-19991224/struct/text.html#h-9.4
+    "These two elements are unusual for HTML in that they may serve as either
+    block-level or inline elements (but not both). They may contain one or more
+    words within a paragraph or contain one or more block-level elements such
+    as paragraphs, lists and tables." */
 
     if (extensions && extensions['tagreplacement'])
         text = extensions['tagreplacement'](text);
@@ -47,8 +54,8 @@ function htmlToText(html, extensions) {
         'dir', 'address', 'blockquote', 'center', 'div', 'hr', 'pre', 'form',
         'textarea', 'table'];
 
-    var singleNewlineTags = ['li', 'del', 'ins', 'fieldset', 'legend',
-        'tr', 'th', 'caption', 'thead', 'tbody', 'tfoot'];
+    var singleNewlineTags = ['li', 'fieldset', 'legend', 'tr', 'th', 'caption',
+        'thead', 'tbody', 'tfoot'];
 
     for (i = 0; i < doubleNewlineTags.length; i++) {
         var r = RegExp('</?\\s*' + doubleNewlineTags[i] + '[^>]*>', 'ig');
